@@ -19,7 +19,7 @@ from backend.pipeline import Pipeline
 
 # 路径配置
 BASE_DIR = Path(__file__).resolve().parent.parent
-FRONTEND_DIR = BASE_DIR / "frontend"
+FRONTEND_DIR = BASE_DIR / "frontend" / "dist"
 UPLOAD_DIR = BASE_DIR / "uploads"
 DEMO_DIR = BASE_DIR / "demo_videos"
 
@@ -198,10 +198,6 @@ async def websocket_analyze(websocket: WebSocket):
 
 # ============ 静态文件 ============
 
-# 前端静态文件
-app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")
-app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
-
 # Demo 视频访问
 @app.get("/demo_videos/{filename}")
 async def serve_demo_video(filename: str):
@@ -210,10 +206,13 @@ async def serve_demo_video(filename: str):
         return FileResponse(path)
     return JSONResponse(status_code=404, content={"error": "not found"})
 
-# 首页
-@app.get("/")
-async def index():
-    return FileResponse(str(FRONTEND_DIR / "index.html"))
+# 前端静态文件（Vue 构建产物）
+if FRONTEND_DIR.exists():
+    @app.get("/")
+    async def index():
+        return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
 if __name__ == "__main__":

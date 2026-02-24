@@ -1,6 +1,6 @@
 """
 Sport Vision — 动作识别模块
-基于关键点时序分析的击球动作识别引擎
+基于关键点时序分析的运动动作识别引擎
 """
 
 import math
@@ -12,17 +12,15 @@ from typing import Optional
 class ActionRecognizer:
     """
     规则引擎动作识别器
-    通过关键点的时序变化识别羽毛球/网球的典型动作
+    通过关键点的时序变化识别球拍类运动的典型动作
     """
 
     # 支持识别的动作类型
     ACTIONS = {
         "serve": {"name": "发球 Serve", "icon": "🎯", "color": "#00f0ff"},
-        "smash": {"name": "扣杀 Smash", "icon": "💥", "color": "#ff3366"},
         "forehand": {"name": "正手 Forehand", "icon": "➡️", "color": "#33ff88"},
         "backhand": {"name": "反手 Backhand", "icon": "⬅️", "color": "#ffaa33"},
-        "lob": {"name": "挑球 Lob", "icon": "🌈", "color": "#aa66ff"},
-        "drop": {"name": "吊球 Drop", "icon": "🪶", "color": "#66ddff"},
+        "lob": {"name": "高吊 Lob", "icon": "🌈", "color": "#aa66ff"},
         "ready": {"name": "准备 Ready", "icon": "🧍", "color": "#888888"},
         "moving": {"name": "移动 Moving", "icon": "🏃", "color": "#ffdd44"},
     }
@@ -129,27 +127,12 @@ class ActionRecognizer:
             wrist_vertical_speed > 3):
             return "serve", 0.85
 
-        # === 扣杀检测 ===
-        # 特征：手腕极高位 + 快速向下挥动 + 肘部先弯后伸
-        if (wrist_y < shoulder_y - 50 and
-            wrist_speed > 15 and
-            wrist_vertical_speed > 8):
-            return "smash", 0.80
-
-        # === 挑球检测 ===
+        # === 高吊检测 ===
         # 特征：手腕从低位向上快速挥动
         if (wrist_y > hip_y and
             wrist_vertical_speed < -5 and
             wrist_speed > 8):
             return "lob", 0.70
-
-        # === 吊球检测 ===
-        # 特征：手腕在高位 + 慢速下压
-        if (wrist_y < shoulder_y and
-            0 < wrist_vertical_speed < 5 and
-            wrist_speed < 10 and
-            elbow_angle > 100):
-            return "drop", 0.65
 
         # === 正手/反手检测 ===
         # 基于手腕相对身体的横向位置和运动方向
